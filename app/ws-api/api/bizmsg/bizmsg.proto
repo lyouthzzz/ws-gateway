@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package wsapi.bizmsg;
+
+option go_package = "github.com/lyouthzzz/ws-gateway/app/ws-api/api/bizmsg";
+
+service BizMsgService {
+  rpc Push(BizMsg) returns (PushBizMsgReply) {}
+}
+
+message BizMsg {
+  string bizCode = 1;
+  string bizDesc = 2;
+  string bizPayload = 3;
+
+  uint64 uid = 4; // 推送的用户标识
+}
+
+message PushBizMsgReply {
+  int64 successCount = 1; // 推送成功用户数量
+}

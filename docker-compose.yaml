@@ -1,0 +1,37 @@
+version: "3.3"
+
+services:
+  ws-gateway:
+    container_name: ws-gateway
+    image: ws-gateway
+    environment:
+      APPLICATION_ID: ws-gateway
+      APP_ENV: QA
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ws-api
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 2G
+        reservations:
+          cpus: 1
+          memory: 2G
+  ws-api:
+    container_name: ws-api
+    image: ws-api
+    environment:
+      APPLICATION_ID: ws-api
+      APP_ENV: QA
+    ports:
+      - "8081:8081"
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 2G
+        reservations:
+          cpus: 1
+          memory: 2G

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package wsapi.exchange;
+
+option go_package = "github.com/lyouthzzz/ws-gateway/app/ws-api/api/exchange";
+import "protocol/protocol.proto";
+
+service ExchangeService {
+  rpc ExchangeMsg(stream Msg) returns (stream Msg) {}
+}
+
+message Msg {
+  uint64 sid = 1;
+  string gatewayIP = 2;
+  gateway.protocol.Protocol payload = 3;
+}
