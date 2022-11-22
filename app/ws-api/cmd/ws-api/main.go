@@ -1,1 +1,5 @@
-package ws_api
+package main
+
+func main() {
+
+}
