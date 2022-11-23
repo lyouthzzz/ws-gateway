@@ -21,7 +21,7 @@ func NewWebsocketGateway(opts ...WebsocketGatewayOption) *WebsocketGateway {
 		sidConnRelation: relation.NewSidConnRelation(),
 		localIP:         netutil.LocalIPString(),
 
-		logger:          log.Default(),
+		logger: log.Default(),
 	}
 
 	for _, opt := range opts {
@@ -78,7 +78,7 @@ func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
 			if err = gateway.upstream.Send(&exchange.Msg{
 				Sid:       nextSid,
 				GatewayIP: gateway.localIP,
-				Payload:   nil,
+				Payload:   protoMsg,
 			}); err != nil {
 				gateway.logger.Printf("send upstream err: %s\n", err.Error())
 			}

@@ -8,6 +8,10 @@ import (
 	"log"
 )
 
+func NewExchangeService() *ExchangeService {
+	return &ExchangeService{streams: make(map[string]exchange.ExchangeService_ExchangeMsgServer), logger: log.Default()}
+}
+
 type ExchangeService struct {
 	exchange.UnimplementedExchangeServiceServer
 	streams map[string]exchange.ExchangeService_ExchangeMsgServer
@@ -23,10 +27,12 @@ func (exchangeService *ExchangeService) ExchangeMsg(msgServer exchange.ExchangeS
 		return errors.New("gateway ip header not found")
 	}
 
+	exchangeService.streams[gatewayIP[0]] = msgServer
 	exchangeService.logger.Printf("gateway %s gRPC streaming connect\n", gatewayIP)
 
 	defer func() {
 		exchangeService.logger.Printf("gateway %s gRPC streaming closed\n", gatewayIP)
+		delete(exchangeService.streams, gatewayIP[0])
 	}()
 
 	for {
@@ -36,7 +42,7 @@ func (exchangeService *ExchangeService) ExchangeMsg(msgServer exchange.ExchangeS
 			break
 		}
 		if err != nil {
-			exchangeService.logger.Printf("recv err: %s\n" + err.Error())
+			exchangeService.logger.Printf("recv err: %s\n", err.Error())
 			break
 		}
 		if msg.Payload == nil {

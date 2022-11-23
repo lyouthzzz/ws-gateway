@@ -1,12 +1,15 @@
 # ws-gateway
 
-## ws-api
+## build
+
+### ws-gateway
+
 ```bash
-docker build --build-arg APP_NAME=ws-api -t ws-api .
+docker build --build-arg APP_NAME=ws-gateway -f deploy/docker/Dockerfile -t ws-gateway .
 ```
 
-## ws-gateway
-```bash
-docker build --build-arg APP_NAME=ws-gateway -t ws-gateway .
-```
+### ws-api
 
+```bash
+docker build --build-arg APP_NAME=ws-api -f deploy/docker/Dockerfile -t ws-api .
+```

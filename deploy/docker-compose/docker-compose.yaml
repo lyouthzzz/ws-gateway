@@ -5,8 +5,7 @@ services:
     container_name: ws-gateway
     image: ws-gateway
     environment:
-      APPLICATION_ID: ws-gateway
-      APP_ENV: QA
+      APP_NAME: ws-gateway
     ports:
       - "8080:8080"
     depends_on:
@@ -19,12 +18,13 @@ services:
         reservations:
           cpus: 1
           memory: 2G
+    command:
+      - /app/ws-gateway --ws_api_endpoint ws-api:8081
   ws-api:
     container_name: ws-api
     image: ws-api
     environment:
-      APPLICATION_ID: ws-api
-      APP_ENV: QA
+      APP_NAME: ws-api
     ports:
       - "8081:8081"
     deploy:

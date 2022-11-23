@@ -3,7 +3,9 @@ package upstream
 import (
 	"context"
 	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
+	"github.com/lyouthzzz/ws-gateway/pkg/netutil"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/metadata"
 	"io"
 	"log"
 )
@@ -17,7 +19,7 @@ var _ Upstream = (*gRPCStreamingUpstream)(nil)
 
 type GRPCStreamingUpstreamOption func(*gRPCStreamingUpstream)
 
-func GRPCStreamingExchangServer(svr exchange.ExchangeServiceClient) GRPCStreamingUpstreamOption {
+func GRPCStreamingExchangeClient(svr exchange.ExchangeServiceClient) GRPCStreamingUpstreamOption {
 	return func(upstream *gRPCStreamingUpstream) { upstream.exc = svr }
 }
 
@@ -41,12 +43,15 @@ func NewGRPCStreamingUpstream(opts ...GRPCStreamingUpstreamOption) (Upstream, er
 	}
 
 	var err error
-	if up.msgc, err = up.exc.ExchangeMsg(context.Background()); err != nil {
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(map[string]string{"X-Gateway-IP": netutil.LocalIPString()}))
+	if up.msgc, err = up.exc.ExchangeMsg(ctx); err != nil {
 		return nil, errors.WithStack(err)
 	}
 
 	up.recvMsgChan = make(chan *exchange.Msg, up.recvMsgChanCap)
 	up.sendMsgChan = make(chan *exchange.Msg, up.sendMsgChanCap)
+
+	go up.recvMsg()
 
 	return up, nil
 }
