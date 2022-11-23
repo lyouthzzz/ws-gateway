@@ -5,6 +5,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
 	"github.com/lyouthzzz/ws-gateway/api/wsgateway/protocol"
+	metrics "github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/metric"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/relation"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/socketid"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
@@ -52,10 +53,13 @@ func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
 			return
 		}
 
+		metrics.GatewayOnlineTotals.Inc()
+
 		nextSid, _ := gateway.sidGenerator.NextSid()
 		gateway.sidConnRelation.Add(nextSid, conn)
 
 		clear := func() {
+			metrics.GatewayOnlineTotals.Dec()
 			gateway.sidConnRelation.Delete(nextSid)
 			_ = conn.Close()
 			gateway.logger.Printf("conn closed. sid: %d\n", nextSid)
@@ -70,6 +74,8 @@ func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
 				gateway.logger.Printf("read message err: %s\n", err.Error())
 				break
 			}
+
+			metrics.GatewayInputBytes.Add(float64(len(data)))
 
 			protoMsg := &protocol.Protocol{}
 			if err := jsoniter.Unmarshal(data, &protoMsg); err != nil {
@@ -108,6 +114,9 @@ func (gateway *WebsocketGateway) recvMsg() {
 		data, _ := jsoniter.Marshal(msg.Payload)
 		if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
 			gateway.logger.Printf("conn write err: %s", err.Error())
+			continue
 		}
+
+		metrics.GatewayOutputBytes.Add(float64(len(data)))
 	}
 }

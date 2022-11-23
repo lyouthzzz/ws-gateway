@@ -13,10 +13,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 1
+          cpus: '1'
           memory: 2G
         reservations:
-          cpus: 1
+          cpus: '1'
           memory: 2G
     command:
       - /app/ws-gateway
@@ -31,8 +31,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: 1
+          cpus: '1'
           memory: 2G
         reservations:
-          cpus: 1
+          cpus: '1'
           memory: 2G

@@ -7,6 +7,8 @@ import (
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/gateway"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	_ "go.uber.org/automaxprocs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -40,6 +42,7 @@ func main() {
 	)
 
 	http.HandleFunc("/gateway/ws", websocketGateway.WebsocketConnectHandler())
+	http.Handle("/metrics", promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{EnableOpenMetrics: true}))
 
 	log.Println("HTTP server serve " + *httpServerAddress)
 
