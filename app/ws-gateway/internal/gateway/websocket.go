@@ -28,6 +28,8 @@ func NewWebsocketGateway(opts ...WebsocketGatewayOption) *WebsocketGateway {
 		opt(gateway)
 	}
 
+	go gateway.recvMsg()
+
 	return gateway
 }
 
