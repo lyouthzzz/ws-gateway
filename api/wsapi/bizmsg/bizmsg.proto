@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package wsapi.bizmsg;
 
-option go_package = "github.com/lyouthzzz/ws-gateway/app/ws-api/api/bizmsg";
+option go_package = "github.com/lyouthzzz/ws-gateway/wsapi/bizmsg";
 
 service BizMsgService {
   rpc Push(BizMsg) returns (PushBizMsgReply) {}

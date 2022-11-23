@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package wsgateway.gateway;
+
+option go_package = "github.com/lyouthzzz/ws-gateway/api/wsgateway/gateway";
+
+service GatewayService {}

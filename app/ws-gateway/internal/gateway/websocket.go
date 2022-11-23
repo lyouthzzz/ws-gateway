@@ -3,11 +3,12 @@ package gateway
 import (
 	"github.com/gorilla/websocket"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/lyouthzzz/ws-gateway/app/ws-api/api/exchange"
-	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/api/protocol"
+	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
+	"github.com/lyouthzzz/ws-gateway/api/wsgateway/protocol"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/relation"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/socketid"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
+	"github.com/lyouthzzz/ws-gateway/pkg/netutil"
 	"log"
 	"net/http"
 	"sync"
@@ -18,6 +19,8 @@ func NewWebsocketGateway(opts ...WebsocketGatewayOption) *WebsocketGateway {
 		sidGenerator:    socketid.NewAtomicGenerator(0),
 		upgrader:        &websocket.Upgrader{},
 		sidConnRelation: relation.NewSidConnRelation(),
+		localIP:         netutil.LocalIPString(),
+
 		logger:          log.Default(),
 	}
 

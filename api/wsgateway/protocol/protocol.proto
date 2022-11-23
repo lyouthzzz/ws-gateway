@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package gateway.protocol;
+package wsgateway.protocol;
 
-option go_package = "github.com/lyouthzzz/ws-gateway/app/ws-gateway/api/protocol";
+option go_package = "github.com/lyouthzzz/ws-gateway/api/wsgateway/protocol";
 
 enum Type {
   CONNECT = 0;

@@ -6,7 +6,11 @@ import (
 )
 
 func main() {
+
+
 	websocketGateway := gateway.NewWebsocketGateway()
 
 	http.HandleFunc("/gateway/ws", websocketGateway.WebsocketConnectHandler())
+
+	panic(http.ListenAndServe(":8080", nil))
 }

@@ -1,7 +1,7 @@
 package upstream
 
 import (
-	"github.com/lyouthzzz/ws-gateway/app/ws-api/api/exchange"
+	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
 )
 
 // Upstream handle bi streaming reconnect by self

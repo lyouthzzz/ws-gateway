@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.15.5
-// source: app/ws-api/api/exchange/exchange.proto
+// source: api/wsapi/exchange/exchange.proto
 
 package exchange
 
@@ -133,5 +133,5 @@ var ExchangeService_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "app/ws-api/api/exchange/exchange.proto",
+	Metadata: "api/wsapi/exchange/exchange.proto",
 }

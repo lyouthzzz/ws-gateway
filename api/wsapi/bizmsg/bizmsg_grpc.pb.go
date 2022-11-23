@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.15.5
-// source: app/ws-api/api/bizmsg/bizmsg.proto
+// source: api/wsapi/bizmsg/bizmsg.proto
 
 package bizmsg
 
@@ -101,5 +101,5 @@ var BizMsgService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/ws-api/api/bizmsg/bizmsg.proto",
+	Metadata: "api/wsapi/bizmsg/bizmsg.proto",
 }
