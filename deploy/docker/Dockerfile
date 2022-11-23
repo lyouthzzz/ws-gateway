@@ -1,7 +1,6 @@
 FROM golang:1.16-alpine3.12 AS build
 
 ENV GOPROXY=https://goproxy.cn,direct
-ENV GOPRIVATE=*.weimob.com
 ENV GO111MODULE=auto
 ENV CGO_ENABLED=0
 ENV GOOS=linux
