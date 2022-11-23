@@ -19,7 +19,8 @@ services:
           cpus: 1
           memory: 2G
     command:
-      - /app/ws-gateway --ws_api_endpoint ws-api:8081
+      - /app/ws-gateway
+      - --ws_api_endpoint=ws-api:8081
   ws-api:
     container_name: ws-api
     image: ws-api
