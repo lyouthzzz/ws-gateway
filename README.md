@@ -1,5 +1,9 @@
 # ws-gateway
 
+## design
+- [谈谈对长连接网关架构的设计](https://younman.com/2022/11/10/%E8%B0%88%E8%B0%88%E5%AF%B9%E9%95%BF%E8%BF%9E%E6%8E%A5%E7%BD%91%E5%85%B3%E6%9E%B6%E6%9E%84%E7%9A%84%E8%AE%BE%E8%AE%A1/)
+- [谈谈对长连接网关架构的设计（二）](https://younman.com/2022/11/24/%E8%B0%88%E8%B0%88%E5%AF%B9%E9%95%BF%E8%BF%9E%E6%8E%A5%E7%BD%91%E5%85%B3%E6%9E%B6%E6%9E%84%E7%9A%84%E8%AE%BE%E8%AE%A1%EF%BC%88%E4%BA%8C%EF%BC%89/)
+
 ## Architecture
 
 ![架构图.png](docs/architecture.png)
