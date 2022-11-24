@@ -1,15 +1,22 @@
 package gateway
 
 import (
+	"context"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
 	"github.com/lyouthzzz/ws-gateway/api/wsgateway/protocol"
+	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"math/rand"
 	"testing"
 )
 
 func TestWebsocketProtocol(t *testing.T) {
-	v := randStr(10)
+	v := randStr(1024 * 5)
 
 	payload := map[string]string{
 		"key": v,
@@ -37,4 +44,45 @@ func randStr(n int) string {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+func getMockGateway(b testing.TB) *WebsocketGateway {
+	conn, err := grpc.DialContext(context.Background(), "localhost:8081", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(errors.WithStack(err))
+	}
+	exc := exchange.NewExchangeServiceClient(conn)
+
+	up, err := upstream.NewGRPCStreamingUpstream(
+		upstream.GRPCStreamingExchangeClient(exc),
+	)
+	if err != nil {
+		panic(errors.WithStack(err))
+	}
+
+	websocketGateway := NewWebsocketGateway(
+		WebsocketGatewayOptionUpstream(up),
+	)
+
+	return websocketGateway
+}
+
+func BenchmarkWebsocketGateway_Send_case1(b *testing.B) {
+	websocketGateway := getMockGateway(b)
+
+	msg := &exchange.Msg{
+		Sid:       1,
+		GatewayIP: "localhost",
+		Payload: &protocol.Protocol{
+			Type:    "HEARTBEAT",
+			Payload: []byte(randStr(1024)),
+		},
+	}
+	msgContent, _ := jsoniter.Marshal(msg)
+	fmt.Println(len(msgContent))
+
+	for i := 0; i < b.N; i++ {
+		err := websocketGateway.upstream.Send(msg)
+		require.NoError(b, err)
+	}
 }

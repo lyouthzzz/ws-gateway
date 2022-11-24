@@ -42,6 +42,7 @@ go get github.com/lyouthzzz/websocket-benchmark-cli@main
 - websocket客户端：1w
 - 发送间隔：1s
 - 数据大小：50b
+- 单个gRPC Streaming连接
 
 ```bash
  websocket-benchmark-cli message --file testdata/50b.txt  --interval 1s --times 10000 --user 10000 --host 127.0.0.1:8080 --path /gateway/ws
@@ -63,6 +64,7 @@ CONTAINER ID   NAME         CPU %     MEM USAGE / LIMIT   MEM %     NET I/O     
 - websocket客户端：1w
 - 发送间隔：1s
 - 数据大小：1k
+- 单个gRPC Streaming连接
 
 ```bash
 websocket-benchmark-cli message --file testdata/1k.txt  --interval 1s --times 10000 --user 10000 --host 127.0.0.1:8080 --path /gateway/ws
@@ -78,5 +80,50 @@ websocket-benchmark-cli message --file testdata/1k.txt  --interval 1s --times 10
 
 ![统计图.png](docs/benchmark-1k.png)
 
+### case-3
+- websocket客户端：1w
+- 发送间隔：1s
+- 数据大小：1k
+- 单个gRPC Streaming连接
+
+case-2版本的性能问题发现了，罪魁祸首是锁争用。
+
+https://github.com/lyouthzzz/ws-gateway/blob/main/app/ws-gateway/internal/upstream/grpc_streaming.go#L81
+
+```go
+func (upstream *gRPCStreamingUpstream) Send(msg *exchange.Msg) error {
+	return upstream.msgc.SendMsg(msg)
+}
+```
+
+1w个websocket goroutine会调用gRPCStreaming.SendMsg()，里面会存在锁争用问题。
+
+优化方案：
+使用chan buffer缓冲（channel实现对锁有做优化手段），增加吞能力。开单独的写goroutine发送消息，避免锁争用。
+
+```go
+func NewGRPCStreamingUpstream(opts ...GRPCStreamingUpstreamOption) (Upstream, error) {
+    up := &gRPCStreamingUpstream{}
+    ...
+	
+    go up.sendMsg()
+    go up.recvMsg()
+
+    return up, nil
+}
+
+// todo ??? use chan buffer or send gRPC Streaming sync
+func (upstream *gRPCStreamingUpstream) sendMsg() {
+	for msg := range upstream.sendMsgChan {
+		_ = upstream.msgc.SendMsg(msg)
+	}
+}
+```
+
+![统计图.png](docs/benchmark-1k-2.png)
 
 
+## 性能瓶颈
+
+## 优化
+- ws-gateway <-> ws-api使用多个gRPC Streaming通道交换数据

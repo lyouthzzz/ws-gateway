@@ -51,6 +51,7 @@ func NewGRPCStreamingUpstream(opts ...GRPCStreamingUpstreamOption) (Upstream, er
 	up.recvMsgChan = make(chan *exchange.Msg, up.recvMsgChanCap)
 	up.sendMsgChan = make(chan *exchange.Msg, up.sendMsgChanCap)
 
+	go up.sendMsg()
 	go up.recvMsg()
 
 	return up, nil
@@ -78,7 +79,8 @@ func (upstream *gRPCStreamingUpstream) Recv() (*exchange.Msg, error) {
 }
 
 func (upstream *gRPCStreamingUpstream) Send(msg *exchange.Msg) error {
-	return upstream.msgc.SendMsg(msg)
+	upstream.sendMsgChan <- msg
+	return nil
 }
 
 func (upstream *gRPCStreamingUpstream) Close() error {
