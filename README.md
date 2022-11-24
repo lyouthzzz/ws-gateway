@@ -1,5 +1,9 @@
 # ws-gateway
 
+## Architecture
+
+![架构图.png](docs/architecture.png)
+
 ## build
 
 ### ws-gateway
