@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	_ "go.uber.org/automaxprocs"
 	"google.golang.org/grpc"
+	channelzservice "google.golang.org/grpc/channelz/service"
 	"log"
 	"net"
 )
@@ -19,6 +20,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	exchange.RegisterExchangeServiceServer(grpcServer, service.NewExchangeService())
+	channelzservice.RegisterChannelzServiceToServer(grpcServer)
 
 	lis, err := net.Listen("tcp", *gRPCServerAddress)
 	if err != nil {

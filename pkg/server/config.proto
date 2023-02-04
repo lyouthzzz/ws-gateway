@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package server;
+
+option go_package = "github.com/lyouthzzz/ws-gateway/pkg/server";
+
+message Config {
+  string addr = 1;
+  string timeout = 2;
+}

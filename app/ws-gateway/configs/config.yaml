@@ -1,0 +1,11 @@
+server:
+  http:
+    addr: :8080
+    timeout: 5s
+  grpc:
+    addr: :8081
+    timeout: 5s
+client:
+  ws-api:
+    addr: localhost:8081
+    timeout: 1s

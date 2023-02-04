@@ -3,34 +3,65 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/config"
+	"github.com/go-kratos/kratos/v2/config/file"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
+	appconfig "github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/config"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/gateway"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
 	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	_ "go.uber.org/automaxprocs"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"log"
-	"net/http"
 	_ "net/http/pprof"
+	"os"
 )
 
 var (
-	wsAPIEndpoint     = flag.String("ws_api_endpoint", "127.0.0.1:8081", "ws api gRPC address")
-	httpServerAddress = flag.String("http_server_addr", ":8080", "http server listen address")
+	appName    = "ws-gateway"
+	appVersion = "v0.0.1"
 )
+
+func init() {
+	// 应用名称 发布平台通过环境变量注入
+	appName = os.Getenv("APP_NAME")
+	// 应用版本 发布平台通过环境变量注入 通常是发布的镜像名称
+	appVersion = os.Getenv("APP_VERSION")
+}
+
+var (
+	configPath = flag.String("config", "", "config file path of project")
+)
+
+func newApp(logger log.Logger, svrs []transport.Server, rr registry.Registrar) *kratos.App {
+	return kratos.New(
+		kratos.Name(appName),
+		kratos.Version(appVersion),
+		kratos.Logger(logger),
+		kratos.Server(svrs...),
+		kratos.Registrar(rr),
+	)
+}
 
 func main() {
 	flag.Parse()
 
-	conn, err := grpc.DialContext(context.Background(), *wsAPIEndpoint, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	c := config.New(config.WithSource(file.NewSource(*configPath)))
+	if err := c.Load(); err != nil {
+		panic(errors.WithStack(err))
+	}
+	var bc appconfig.Bootstrap
+	if err := c.Scan(&bc); err != nil {
+		panic(errors.WithStack(err))
+	}
+
+	wsAPIClient, err := bc.Client.WsAPI.BuildGRPCClient(context.Background())
 	if err != nil {
 		panic(errors.WithStack(err))
 	}
-	exc := exchange.NewExchangeServiceClient(conn)
-
+	exc := exchange.NewExchangeServiceClient(wsAPIClient)
 	up, err := upstream.NewGRPCStreamingUpstream(
 		upstream.GRPCStreamingExchangeClient(exc),
 	)
@@ -42,10 +73,12 @@ func main() {
 		gateway.WebsocketGatewayOptionUpstream(up),
 	)
 
-	http.HandleFunc("/gateway/ws", websocketGateway.WebsocketConnectHandler())
-	http.Handle("/metrics", promhttp.HandlerFor(prometheus.DefaultGatherer, promhttp.HandlerOpts{EnableOpenMetrics: true}))
+	app, err := initApp(bc.Server, bc.Registry, websocketGateway, log.DefaultLogger)
+	if err != nil {
+		panic(err)
+	}
 
-	log.Println("HTTP server serve " + *httpServerAddress)
-
-	panic(http.ListenAndServe(*httpServerAddress, nil))
+	if err := app.Run(); err != nil {
+		panic(err)
+	}
 }

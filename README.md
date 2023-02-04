@@ -1,6 +1,7 @@
 # ws-gateway
 
 ## design
+
 - [谈谈对长连接网关架构的设计](https://younman.com/2022/11/10/%E8%B0%88%E8%B0%88%E5%AF%B9%E9%95%BF%E8%BF%9E%E6%8E%A5%E7%BD%91%E5%85%B3%E6%9E%B6%E6%9E%84%E7%9A%84%E8%AE%BE%E8%AE%A1/)
 - [谈谈对长连接网关架构的设计（二）](https://younman.com/2022/11/24/%E8%B0%88%E8%B0%88%E5%AF%B9%E9%95%BF%E8%BF%9E%E6%8E%A5%E7%BD%91%E5%85%B3%E6%9E%B6%E6%9E%84%E7%9A%84%E8%AE%BE%E8%AE%A1%EF%BC%88%E4%BA%8C%EF%BC%89/)
 
@@ -9,6 +10,14 @@
 ![架构图.png](docs/architecture.png)
 
 ## build
+
+### 生成proto go 文件
+
+```
+protoc -I. --go_out=paths=source_relative:. pkg/client/config.proto
+protoc -I. --go_out=paths=source_relative:. pkg/server/config.proto
+protoc -I. --proto_path=/Users/y.liu/go/src/github.com/lyouthzzz/ws-gateway/pkg --go_out=paths=source_relative:. app/ws-gateway/internal/config/config.proto
+```
 
 ### ws-gateway
 
@@ -40,7 +49,9 @@ ws-gateway    | 2022/11/23 15:27:42 HTTP server serve :8080
 ```
 
 ## benchmark
+
 ### 安装压测工具
+
 ```bash
 go get github.com/lyouthzzz/websocket-benchmark-cli@main
 ```
@@ -89,6 +100,7 @@ websocket-benchmark-cli message --file testdata/1k.txt  --interval 1s --times 10
 ![统计图.png](docs/benchmark-1k.png)
 
 ### case-3
+
 - websocket客户端：1w
 - 发送间隔：1s
 - 数据大小：1k
@@ -100,7 +112,7 @@ https://github.com/lyouthzzz/ws-gateway/blob/main/app/ws-gateway/internal/upstre
 
 ```go
 func (upstream *gRPCStreamingUpstream) Send(msg *exchange.Msg) error {
-	return upstream.msgc.SendMsg(msg)
+return upstream.msgc.SendMsg(msg)
 }
 ```
 
@@ -111,27 +123,27 @@ func (upstream *gRPCStreamingUpstream) Send(msg *exchange.Msg) error {
 
 ```go
 func NewGRPCStreamingUpstream(opts ...GRPCStreamingUpstreamOption) (Upstream, error) {
-    up := &gRPCStreamingUpstream{}
-    ...
-	
-    go up.sendMsg()
-    go up.recvMsg()
+up := &gRPCStreamingUpstream{}
+...
 
-    return up, nil
+go up.sendMsg()
+go up.recvMsg()
+
+return up, nil
 }
 
 // todo ??? use chan buffer or send gRPC Streaming sync
 func (upstream *gRPCStreamingUpstream) sendMsg() {
-	for msg := range upstream.sendMsgChan {
-		_ = upstream.msgc.SendMsg(msg)
-	}
+for msg := range upstream.sendMsgChan {
+_ = upstream.msgc.SendMsg(msg)
+}
 }
 ```
 
 ![统计图.png](docs/benchmark-1k-2.png)
 
-
 ## 性能瓶颈
 
 ## 优化
+
 - ws-gateway <-> ws-api使用多个gRPC Streaming通道交换数据
