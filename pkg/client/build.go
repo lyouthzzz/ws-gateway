@@ -82,7 +82,7 @@ func (x *Config) BuildGRPCClient(ctx context.Context, opts ...GRPCOption) (*gRPC
 		clientOpts = append(clientOpts, options.clientOpts...)
 	}
 
-	return grpc.Dial(ctx, clientOpts...)
+	return grpc.DialInsecure(ctx, clientOpts...)
 }
 
 func DefaultConfig() *Config {

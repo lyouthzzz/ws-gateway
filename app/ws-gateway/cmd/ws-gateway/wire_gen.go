@@ -6,6 +6,7 @@
 package main
 
 import (
+	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/config"
@@ -20,7 +21,7 @@ import (
 
 // Injectors from wire.go:
 
-func initApp(configServer *config.Server, registry *config.Registry, websocketGateway *gateway.WebsocketGateway, logger log.Logger) (*kratos.App, error) {
+func initApp(configServer *config.Server, registry *etcd.Registry, websocketGateway *gateway.WebsocketGateway, logger log.Logger) (*kratos.App, error) {
 	v := server.NewServers(configServer, websocketGateway, logger)
 	registrar := server.NewRegistry(registry)
 	app := newApp(logger, v, registrar)

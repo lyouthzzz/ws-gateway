@@ -1,14 +1,10 @@
 server:
   http:
-    addr: :28080
+    addr: :18080
     timeout: 5s
   grpc:
-    addr: :28081
+    addr: :18081
     timeout: 5s
-client:
-  wsAPI:
-    addr: discovery:///ws-api
-    timeout: 1s
 registry:
   etcd:
     addr: localhost:2379

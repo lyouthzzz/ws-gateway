@@ -5,8 +5,8 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
 	"github.com/lyouthzzz/ws-gateway/api/wsgateway/protocol"
+	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/mapping"
 	metrics "github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/metric"
-	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/relation"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/socketid"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
 	"github.com/lyouthzzz/ws-gateway/pkg/netutil"
@@ -19,7 +19,7 @@ func NewWebsocketGateway(opts ...WebsocketGatewayOption) *WebsocketGateway {
 	gateway := &WebsocketGateway{
 		sidGenerator:    socketid.NewAtomicGenerator(0),
 		upgrader:        &websocket.Upgrader{},
-		sidConnRelation: relation.NewSidConnRelation(),
+		sidConnRelation: mapping.NewSidConnMapping(),
 		localIP:         netutil.LocalIPString(),
 
 		logger: log.Default(),
@@ -38,7 +38,7 @@ type WebsocketGateway struct {
 	upstream        upstream.Upstream
 	upgrader        *websocket.Upgrader
 	sidGenerator    socketid.Generator
-	sidConnRelation *relation.SidConnRelation
+	sidConnRelation *mapping.SidConnMapping
 	localIP         string
 
 	mu     sync.Mutex

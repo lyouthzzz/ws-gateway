@@ -2,32 +2,48 @@ package main
 
 import (
 	"flag"
-	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
-	"github.com/lyouthzzz/ws-gateway/app/ws-api/internal/service"
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/config"
+	"github.com/go-kratos/kratos/v2/config/file"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v2/transport"
+	appconfig "github.com/lyouthzzz/ws-gateway/app/ws-api/internal/config"
+	"github.com/lyouthzzz/ws-gateway/pkg/env"
 	"github.com/pkg/errors"
 	_ "go.uber.org/automaxprocs"
-	"google.golang.org/grpc"
-	channelzservice "google.golang.org/grpc/channelz/service"
-	"log"
-	"net"
 )
 
 var (
-	gRPCServerAddress = flag.String("grpc_server_address", ":8081", "")
+	configPath = flag.String("config", "", "config file path of project")
 )
 
+func newApp(logger log.Logger, svrs []transport.Server, rr registry.Registrar) *kratos.App {
+	return kratos.New(
+		kratos.Name(env.AppName),
+		kratos.Version(env.AppVersion),
+		kratos.Logger(logger),
+		kratos.Server(svrs...),
+		kratos.Registrar(rr),
+	)
+}
+
 func main() {
-	grpcServer := grpc.NewServer()
+	flag.Parse()
 
-	exchange.RegisterExchangeServiceServer(grpcServer, service.NewExchangeService())
-	channelzservice.RegisterChannelzServiceToServer(grpcServer)
-
-	lis, err := net.Listen("tcp", *gRPCServerAddress)
+	c := config.New(config.WithSource(file.NewSource(*configPath)))
+	if err := c.Load(); err != nil {
+		panic(errors.WithStack(err))
+	}
+	var bc appconfig.Bootstrap
+	if err := c.Scan(&bc); err != nil {
+		panic(errors.WithStack(err))
+	}
+	app, err := initApp(bc.Server, bc.Registry, log.DefaultLogger)
 	if err != nil {
 		panic(errors.WithStack(err))
 	}
-	log.Println("gRPC server serve " + *gRPCServerAddress)
-	if err := grpcServer.Serve(lis); err != nil {
+	if err := app.Run(); err != nil {
 		panic(errors.WithStack(err))
 	}
 }

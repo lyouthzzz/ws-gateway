@@ -1,26 +1,27 @@
 package service
 
 import (
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/google/wire"
 	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
+	"github.com/lyouthzzz/ws-gateway/app/ws-api/internal/dispatcher"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/metadata"
 	"io"
-	"log"
 )
 
+var ProviderSet = wire.NewSet(NewExchangeService)
+
 func NewExchangeService() *ExchangeService {
-	return &ExchangeService{streams: make(map[string]exchange.ExchangeService_ExchangeMsgServer), logger: log.Default()}
+	return &ExchangeService{streams: make(map[string]exchange.ExchangeService_ExchangeMsgServer)}
 }
 
 type ExchangeService struct {
 	exchange.UnimplementedExchangeServiceServer
 	streams map[string]exchange.ExchangeService_ExchangeMsgServer
-
-	logger *log.Logger
 }
 
 func (exchangeService *ExchangeService) ExchangeMsg(msgServer exchange.ExchangeService_ExchangeMsgServer) error {
-
 	md, _ := metadata.FromIncomingContext(msgServer.Context())
 	gatewayIP := md.Get("X-Gateway-IP")
 	if len(gatewayIP) == 0 || gatewayIP[0] == "" {
@@ -28,30 +29,29 @@ func (exchangeService *ExchangeService) ExchangeMsg(msgServer exchange.ExchangeS
 	}
 
 	exchangeService.streams[gatewayIP[0]] = msgServer
-	exchangeService.logger.Printf("gateway %s gRPC streaming connect\n", gatewayIP)
+	log.Infof("gateway %s gRPC streaming connect\n", gatewayIP)
 
 	defer func() {
-		exchangeService.logger.Printf("gateway %s gRPC streaming closed\n", gatewayIP)
+		log.Infof("gateway %s gRPC streaming closed\n", gatewayIP)
 		delete(exchangeService.streams, gatewayIP[0])
 	}()
 
 	for {
 		msg, err := msgServer.Recv()
 		if errors.Is(err, io.EOF) {
-			exchangeService.logger.Printf("gateway stream is closed\n")
+			log.Infof("gateway stream is closed\n")
 			break
 		}
 		if err != nil {
-			exchangeService.logger.Printf("recv err: %s\n", err.Error())
+			log.Infof("recv err: %s\n", err.Error())
 			break
 		}
 		if msg.Payload == nil {
-			exchangeService.logger.Printf("recv payload must not nil\n")
+			log.Infof("recv payload must not nil\n")
 			continue
 		}
-		switch msg.Payload.Type {
-		default:
-			exchangeService.logger.Println(msg)
+		if err := dispatcher.GetMsgHandler(msg.Payload.Type).HandleProtocol(msg.Payload); err != nil {
+			log.Errorf("handler msg failed. %+v", msg.Payload)
 		}
 	}
 
