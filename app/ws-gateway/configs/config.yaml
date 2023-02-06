@@ -9,6 +9,7 @@ client:
   wsAPI:
     addr: discovery:///ws-api
     timeout: 1s
+    insecure: true
 registry:
   etcd:
     addr: localhost:2379

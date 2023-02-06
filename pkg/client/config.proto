@@ -7,4 +7,5 @@ option go_package = "github.com/lyouthzzz/ws-gateway/pkg/client";
 message Config {
   string addr = 1;
   string timeout = 2;
+  bool insecure = 3;
 }
