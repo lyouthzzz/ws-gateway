@@ -10,7 +10,7 @@ import (
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
+	"github.com/lyouthzzz/ws-gateway/api/wsapi"
 	appconfig "github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/config"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/gateway"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/server"
@@ -54,7 +54,7 @@ func main() {
 	if err != nil {
 		panic(errors.WithStack(err))
 	}
-	exc := exchange.NewExchangeServiceClient(wsAPIClient)
+	exc := wsapi.NewExchangeServiceClient(wsAPIClient)
 	up, err := upstream.NewGRPCStreamingUpstream(
 		upstream.GRPCStreamingExchangeClient(exc),
 	)

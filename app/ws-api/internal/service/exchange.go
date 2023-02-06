@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
-	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
+	"github.com/lyouthzzz/ws-gateway/api/wsapi"
 	"github.com/lyouthzzz/ws-gateway/app/ws-api/internal/dispatcher"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/metadata"
@@ -13,15 +13,15 @@ import (
 var ProviderSet = wire.NewSet(NewExchangeService)
 
 func NewExchangeService() *ExchangeService {
-	return &ExchangeService{streams: make(map[string]exchange.ExchangeService_ExchangeMsgServer)}
+	return &ExchangeService{streams: make(map[string]wsapi.ExchangeService_ExchangeMsgServer)}
 }
 
 type ExchangeService struct {
-	exchange.UnimplementedExchangeServiceServer
-	streams map[string]exchange.ExchangeService_ExchangeMsgServer
+	wsapi.UnimplementedExchangeServiceServer
+	streams map[string]wsapi.ExchangeService_ExchangeMsgServer
 }
 
-func (exchangeService *ExchangeService) ExchangeMsg(msgServer exchange.ExchangeService_ExchangeMsgServer) error {
+func (exchangeService *ExchangeService) ExchangeMsg(msgServer wsapi.ExchangeService_ExchangeMsgServer) error {
 	md, _ := metadata.FromIncomingContext(msgServer.Context())
 	gatewayIP := md.Get("X-Gateway-IP")
 	if len(gatewayIP) == 0 || gatewayIP[0] == "" {

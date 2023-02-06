@@ -17,6 +17,7 @@
 protoc -I. --go_out=paths=source_relative:. pkg/client/config.proto
 protoc -I. --go_out=paths=source_relative:. pkg/server/config.proto
 protoc -I. --proto_path=/Users/y.liu/go/src/github.com/lyouthzzz/ws-gateway/pkg --go_out=paths=source_relative:. app/ws-gateway/internal/config/config.proto
+kratos proto client --proto_path=/Users/y.liu/go/src/github.com/lyouthzzz/ws-gateway/api api/wsapi
 ```
 
 ### ws-gateway

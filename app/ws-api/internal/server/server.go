@@ -6,7 +6,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"github.com/google/wire"
-	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
+	"github.com/lyouthzzz/ws-gateway/api/wsapi"
 	"github.com/lyouthzzz/ws-gateway/app/ws-api/internal/config"
 	"github.com/lyouthzzz/ws-gateway/app/ws-api/internal/service"
 	"github.com/prometheus/client_golang/prometheus"
@@ -21,7 +21,7 @@ func NewServers(conf *config.Server, exchangeSvc *service.ExchangeService) []tra
 	_PromHTTP_Metrics_Handler(httpServer)
 
 	grpcServer := conf.Grpc.BuildGRPCServer()
-	exchange.RegisterExchangeServiceServer(grpcServer, exchangeSvc)
+	wsapi.RegisterExchangeServiceServer(grpcServer, exchangeSvc)
 	//channelzservice.RegisterChannelzServiceToServer(grpcServer)
 	return []transport.Server{httpServer, grpcServer}
 }

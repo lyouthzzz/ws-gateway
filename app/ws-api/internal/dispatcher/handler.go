@@ -2,13 +2,13 @@ package dispatcher
 
 import (
 	"fmt"
-	"github.com/lyouthzzz/ws-gateway/api/wsgateway/protocol"
+	"github.com/lyouthzzz/ws-gateway/api/wsgateway"
 )
 
 var msgHandlerRegistry map[string]MsgHandler
 
 type MsgHandler interface {
-	HandleProtocol(*protocol.Protocol) error
+	HandleProtocol(*wsgateway.Protocol) error
 }
 
 func GetMsgHandler(t string) MsgHandler {
@@ -28,7 +28,7 @@ var _ MsgHandler = (*defaultMsgHandler)(nil)
 
 type defaultMsgHandler struct{}
 
-func (handler *defaultMsgHandler) HandleProtocol(p *protocol.Protocol) error {
+func (handler *defaultMsgHandler) HandleProtocol(p *wsgateway.Protocol) error {
 	fmt.Println("unknown protocol type " + p.Type)
 	return nil
 }

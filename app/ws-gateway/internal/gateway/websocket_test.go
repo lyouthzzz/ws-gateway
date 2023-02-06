@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
+	"github.com/lyouthzzz/ws-gateway/api/wsapi"
 	"github.com/lyouthzzz/ws-gateway/api/wsgateway/protocol"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
 	"github.com/pkg/errors"
@@ -51,7 +51,7 @@ func getMockGateway(b testing.TB) *WebsocketGateway {
 	if err != nil {
 		panic(errors.WithStack(err))
 	}
-	exc := exchange.NewExchangeServiceClient(conn)
+	exc := wsapi.NewExchangeServiceClient(conn)
 
 	up, err := upstream.NewGRPCStreamingUpstream(
 		upstream.GRPCStreamingExchangeClient(exc),
@@ -70,7 +70,7 @@ func getMockGateway(b testing.TB) *WebsocketGateway {
 func BenchmarkWebsocketGateway_Send_case1(b *testing.B) {
 	websocketGateway := getMockGateway(b)
 
-	msg := &exchange.Msg{
+	msg := &wsapi.Msg{
 		Sid:       1,
 		GatewayIP: "localhost",
 		Payload: &protocol.Protocol{

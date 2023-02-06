@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package wsapi;
+
+option go_package = "github.com/lyouthzzz/ws-gateway/api/wsapi";
+
+import "wsgateway/protocol.proto";
+
+service ExchangeService {
+  rpc ExchangeMsg(stream Msg) returns (stream Msg);
+  rpc Connect(ConnectReply) returns (ConnectReply);
+  rpc Disconnect(DisconnectRequest) returns (DisconnectReply);
+}
+
+message Msg {
+  uint64 sid = 1;
+  string gatewayIP = 2;
+  wsgateway.Protocol payload = 3;
+}
+
+message ConnectRequest {
+  string server = 1;
+  string sid = 2;
+  bytes token = 3;
+}
+
+message ConnectReply {
+  int64 uid = 1;
+  string channel = 2;
+}
+
+message DisconnectRequest {
+  string server = 1;
+  string sid = 2;
+  string channel = 3;
+}
+
+message DisconnectReply {}

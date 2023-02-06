@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.15.5
-// source: api/wsapi/bizmsg/bizmsg.proto
+// source: api/wsapi/bizmsg.proto
 
-package bizmsg
+package wsapi
 
 import (
 	context "context"
@@ -35,7 +35,7 @@ func NewBizMsgServiceClient(cc grpc.ClientConnInterface) BizMsgServiceClient {
 
 func (c *bizMsgServiceClient) Push(ctx context.Context, in *BizMsg, opts ...grpc.CallOption) (*PushBizMsgReply, error) {
 	out := new(PushBizMsgReply)
-	err := c.cc.Invoke(ctx, "/wsapi.bizmsg.BizMsgService/Push", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wsapi.BizMsgService/Push", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func _BizMsgService_Push_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wsapi.bizmsg.BizMsgService/Push",
+		FullMethod: "/wsapi.BizMsgService/Push",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BizMsgServiceServer).Push(ctx, req.(*BizMsg))
@@ -92,7 +92,7 @@ func _BizMsgService_Push_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var BizMsgService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wsapi.bizmsg.BizMsgService",
+	ServiceName: "wsapi.BizMsgService",
 	HandlerType: (*BizMsgServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -101,5 +101,5 @@ var BizMsgService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/wsapi/bizmsg/bizmsg.proto",
+	Metadata: "api/wsapi/bizmsg.proto",
 }

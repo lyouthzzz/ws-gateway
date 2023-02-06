@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.15.5
-// source: api/wsgateway/gateway/gateway.proto
+// source: api/wsgateway/gateway.proto
 
-package gateway
+package wsgateway
 
 import (
 	grpc "google.golang.org/grpc"
@@ -57,9 +57,9 @@ func RegisterGatewayServiceServer(s grpc.ServiceRegistrar, srv GatewayServiceSer
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var GatewayService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wsgateway.gateway.GatewayService",
+	ServiceName: "wsgateway.GatewayService",
 	HandlerType: (*GatewayServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams:     []grpc.StreamDesc{},
-	Metadata:    "api/wsgateway/gateway/gateway.proto",
+	Metadata:    "api/wsgateway/gateway.proto",
 }

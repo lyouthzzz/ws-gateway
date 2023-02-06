@@ -1,16 +1,16 @@
 package gateway
 
 import (
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gorilla/websocket"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
-	"github.com/lyouthzzz/ws-gateway/api/wsgateway/protocol"
+	"github.com/lyouthzzz/ws-gateway/api/wsapi"
+	"github.com/lyouthzzz/ws-gateway/api/wsgateway"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/mapping"
 	metrics "github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/metric"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/socketid"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
 	"github.com/lyouthzzz/ws-gateway/pkg/netutil"
-	"log"
 	"net/http"
 	"sync"
 )
@@ -21,8 +21,6 @@ func NewWebsocketGateway(opts ...WebsocketGatewayOption) *WebsocketGateway {
 		upgrader:        &websocket.Upgrader{},
 		sidConnRelation: mapping.NewSidConnMapping(),
 		localIP:         netutil.LocalIPString(),
-
-		logger: log.Default(),
 	}
 
 	for _, opt := range opts {
@@ -41,8 +39,7 @@ type WebsocketGateway struct {
 	sidConnRelation *mapping.SidConnMapping
 	localIP         string
 
-	mu     sync.Mutex
-	logger *log.Logger
+	mu sync.Mutex
 }
 
 func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
@@ -62,33 +59,34 @@ func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
 			metrics.GatewayOnlineTotals.Dec()
 			gateway.sidConnRelation.Delete(nextSid)
 			_ = conn.Close()
-			gateway.logger.Printf("conn closed. sid: %d\n", nextSid)
+
+			log.Infof("conn closed. sid: %d\n", nextSid)
 		}
 		defer clear()
 
-		gateway.logger.Printf("conn connect. sid: %d\n", nextSid)
+		log.Infof("conn connect. sid: %d", nextSid)
 
 		for {
 			_, data, err := conn.ReadMessage()
 			if err != nil {
-				gateway.logger.Printf("read message err: %s\n", err.Error())
+				log.Infof("read message err: %s", err.Error())
 				break
 			}
 
 			metrics.GatewayInputBytes.Add(float64(len(data)))
 
-			protoMsg := &protocol.Protocol{}
+			protoMsg := &wsgateway.Protocol{}
 			if err := jsoniter.Unmarshal(data, &protoMsg); err != nil {
-				gateway.logger.Printf("unmarshal protocol err: %s\n", err.Error())
+				log.Infof("unmarshal protocol err: %s", err.Error())
 				continue
 			}
 
-			if err = gateway.upstream.Send(&exchange.Msg{
+			if err = gateway.upstream.Send(&wsapi.Msg{
 				Sid:       nextSid,
 				GatewayIP: gateway.localIP,
 				Payload:   protoMsg,
 			}); err != nil {
-				gateway.logger.Printf("send upstream err: %s\n", err.Error())
+				log.Infof("send upstream err: %s", err.Error())
 			}
 		}
 	}
@@ -98,22 +96,22 @@ func (gateway *WebsocketGateway) recvMsg() {
 	for {
 		msg, err := gateway.upstream.Recv()
 		if err != nil {
-			gateway.logger.Printf("recv msg err: %s\n", err.Error())
+			log.Infof("recv msg err: %s", err.Error())
 			continue
 		}
 		if msg.Sid == 0 {
-			gateway.logger.Printf("recv msg sid is 0, continue")
+			log.Infof("recv msg sid is 0, continue")
 			continue
 		}
 
 		conn, has := gateway.sidConnRelation.Get(msg.Sid)
 		if !has {
-			gateway.logger.Printf("conn offline. sid: %d\n", msg.Sid)
+			log.Infof("conn offline. sid: %d", msg.Sid)
 			continue
 		}
 		data, _ := jsoniter.Marshal(msg.Payload)
 		if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
-			gateway.logger.Printf("conn write err: %s", err.Error())
+			log.Infof("conn write err: %s", err.Error())
 			continue
 		}
 

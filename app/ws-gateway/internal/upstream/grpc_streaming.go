@@ -2,7 +2,7 @@ package upstream
 
 import (
 	"context"
-	"github.com/lyouthzzz/ws-gateway/api/wsapi/exchange"
+	"github.com/lyouthzzz/ws-gateway/api/wsapi"
 	"github.com/lyouthzzz/ws-gateway/pkg/netutil"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/metadata"
@@ -19,7 +19,7 @@ var _ Upstream = (*gRPCStreamingUpstream)(nil)
 
 type GRPCStreamingUpstreamOption func(*gRPCStreamingUpstream)
 
-func GRPCStreamingExchangeClient(svr exchange.ExchangeServiceClient) GRPCStreamingUpstreamOption {
+func GRPCStreamingExchangeClient(svr wsapi.ExchangeServiceClient) GRPCStreamingUpstreamOption {
 	return func(upstream *gRPCStreamingUpstream) { upstream.exc = svr }
 }
 
@@ -48,8 +48,8 @@ func NewGRPCStreamingUpstream(opts ...GRPCStreamingUpstreamOption) (Upstream, er
 		return nil, errors.WithStack(err)
 	}
 
-	up.recvMsgChan = make(chan *exchange.Msg, up.recvMsgChanCap)
-	up.sendMsgChan = make(chan *exchange.Msg, up.sendMsgChanCap)
+	up.recvMsgChan = make(chan *wsapi.Msg, up.recvMsgChanCap)
+	up.sendMsgChan = make(chan *wsapi.Msg, up.sendMsgChanCap)
 
 	go up.sendMsg()
 	go up.recvMsg()
@@ -58,13 +58,13 @@ func NewGRPCStreamingUpstream(opts ...GRPCStreamingUpstreamOption) (Upstream, er
 }
 
 type gRPCStreamingUpstream struct {
-	exc  exchange.ExchangeServiceClient
-	msgc exchange.ExchangeService_ExchangeMsgClient
+	exc  wsapi.ExchangeServiceClient
+	msgc wsapi.ExchangeService_ExchangeMsgClient
 
 	recvMsgChanCap int
 	sendMsgChanCap int
-	recvMsgChan    chan *exchange.Msg
-	sendMsgChan    chan *exchange.Msg
+	recvMsgChan    chan *wsapi.Msg
+	sendMsgChan    chan *wsapi.Msg
 
 	// todo ??? 0: init 1: running 2: reconnection 3: stopping 4: stopped
 	status int32
@@ -74,11 +74,11 @@ type gRPCStreamingUpstream struct {
 	logger *log.Logger
 }
 
-func (upstream *gRPCStreamingUpstream) Recv() (*exchange.Msg, error) {
+func (upstream *gRPCStreamingUpstream) Recv() (*wsapi.Msg, error) {
 	return <-upstream.recvMsgChan, nil
 }
 
-func (upstream *gRPCStreamingUpstream) Send(msg *exchange.Msg) error {
+func (upstream *gRPCStreamingUpstream) Send(msg *wsapi.Msg) error {
 	upstream.sendMsgChan <- msg
 	return nil
 }

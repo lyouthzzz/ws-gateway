@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.15.5
-// source: api/wsapi/exchange/exchange.proto
+// source: api/wsapi/exchange.proto
 
-package exchange
+package wsapi
 
 import (
 	context "context"
@@ -23,6 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ExchangeServiceClient interface {
 	ExchangeMsg(ctx context.Context, opts ...grpc.CallOption) (ExchangeService_ExchangeMsgClient, error)
+	Connect(ctx context.Context, in *ConnectReply, opts ...grpc.CallOption) (*ConnectReply, error)
+	Disconnect(ctx context.Context, in *DisconnectRequest, opts ...grpc.CallOption) (*DisconnectReply, error)
 }
 
 type exchangeServiceClient struct {
@@ -34,7 +36,7 @@ func NewExchangeServiceClient(cc grpc.ClientConnInterface) ExchangeServiceClient
 }
 
 func (c *exchangeServiceClient) ExchangeMsg(ctx context.Context, opts ...grpc.CallOption) (ExchangeService_ExchangeMsgClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ExchangeService_ServiceDesc.Streams[0], "/wsapi.exchange.ExchangeService/ExchangeMsg", opts...)
+	stream, err := c.cc.NewStream(ctx, &ExchangeService_ServiceDesc.Streams[0], "/wsapi.ExchangeService/ExchangeMsg", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,11 +66,31 @@ func (x *exchangeServiceExchangeMsgClient) Recv() (*Msg, error) {
 	return m, nil
 }
 
+func (c *exchangeServiceClient) Connect(ctx context.Context, in *ConnectReply, opts ...grpc.CallOption) (*ConnectReply, error) {
+	out := new(ConnectReply)
+	err := c.cc.Invoke(ctx, "/wsapi.ExchangeService/Connect", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exchangeServiceClient) Disconnect(ctx context.Context, in *DisconnectRequest, opts ...grpc.CallOption) (*DisconnectReply, error) {
+	out := new(DisconnectReply)
+	err := c.cc.Invoke(ctx, "/wsapi.ExchangeService/Disconnect", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExchangeServiceServer is the server API for ExchangeService service.
 // All implementations must embed UnimplementedExchangeServiceServer
 // for forward compatibility
 type ExchangeServiceServer interface {
 	ExchangeMsg(ExchangeService_ExchangeMsgServer) error
+	Connect(context.Context, *ConnectReply) (*ConnectReply, error)
+	Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error)
 	mustEmbedUnimplementedExchangeServiceServer()
 }
 
@@ -78,6 +100,12 @@ type UnimplementedExchangeServiceServer struct {
 
 func (UnimplementedExchangeServiceServer) ExchangeMsg(ExchangeService_ExchangeMsgServer) error {
 	return status.Errorf(codes.Unimplemented, "method ExchangeMsg not implemented")
+}
+func (UnimplementedExchangeServiceServer) Connect(context.Context, *ConnectReply) (*ConnectReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
+}
+func (UnimplementedExchangeServiceServer) Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
 }
 func (UnimplementedExchangeServiceServer) mustEmbedUnimplementedExchangeServiceServer() {}
 
@@ -118,13 +146,58 @@ func (x *exchangeServiceExchangeMsgServer) Recv() (*Msg, error) {
 	return m, nil
 }
 
+func _ExchangeService_Connect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConnectReply)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExchangeServiceServer).Connect(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wsapi.ExchangeService/Connect",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExchangeServiceServer).Connect(ctx, req.(*ConnectReply))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExchangeService_Disconnect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisconnectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExchangeServiceServer).Disconnect(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wsapi.ExchangeService/Disconnect",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExchangeServiceServer).Disconnect(ctx, req.(*DisconnectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExchangeService_ServiceDesc is the grpc.ServiceDesc for ExchangeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ExchangeService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "wsapi.exchange.ExchangeService",
+	ServiceName: "wsapi.ExchangeService",
 	HandlerType: (*ExchangeServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Connect",
+			Handler:    _ExchangeService_Connect_Handler,
+		},
+		{
+			MethodName: "Disconnect",
+			Handler:    _ExchangeService_Disconnect_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "ExchangeMsg",
@@ -133,5 +206,5 @@ var ExchangeService_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "api/wsapi/exchange/exchange.proto",
+	Metadata: "api/wsapi/exchange.proto",
 }

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package wsgateway;
+
+option go_package = "github.com/lyouthzzz/ws-gateway/api/wsgateway";
+
+enum Type {
+  HEARTBEAT = 0;
+}
+
+message Protocol {
+  string type = 1;
+  bytes payload = 2;
+}
+
+message HeartBeatPayload {
+  string server = 1;
+  string sid = 2;
+  string uid = 3;
+}
