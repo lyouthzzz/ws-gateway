@@ -9,6 +9,7 @@ var msgHandlerRegistry map[string]MsgHandler
 
 type MsgHandler interface {
 	HandleProtocol(*wsgateway.Protocol) error
+	Name() string
 }
 
 func GetMsgHandler(name string) MsgHandler {
@@ -16,11 +17,11 @@ func GetMsgHandler(name string) MsgHandler {
 	if ok {
 		return handler
 	}
-	return msgHandlerRegistry["DEFAULT"]
+	return globalDefaultMsgHandler
 }
 
-func RegisterHandler(name string, handler MsgHandler) {
-	msgHandlerRegistry[name] = handler
+func RegisterHandler(handler MsgHandler) {
+	msgHandlerRegistry[handler.Name()] = handler
 }
 
 func init() {
@@ -28,9 +29,16 @@ func init() {
 	msgHandlerRegistry["DEFAULT"] = &defaultMsgHandler{}
 }
 
-var _ MsgHandler = (*defaultMsgHandler)(nil)
+var (
+	_                       MsgHandler = (*defaultMsgHandler)(nil)
+	globalDefaultMsgHandler            = &defaultMsgHandler{}
+)
 
 type defaultMsgHandler struct{}
+
+func (handler *defaultMsgHandler) Name() string {
+	return "DEFAULT"
+}
 
 func (handler *defaultMsgHandler) HandleProtocol(p *wsgateway.Protocol) error {
 	fmt.Println("unknown protocol type " + p.Type)

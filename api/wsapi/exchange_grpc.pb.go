@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ExchangeServiceClient interface {
 	ExchangeMsg(ctx context.Context, opts ...grpc.CallOption) (ExchangeService_ExchangeMsgClient, error)
-	Connect(ctx context.Context, in *ConnectReply, opts ...grpc.CallOption) (*ConnectReply, error)
+	Connect(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (*ConnectReply, error)
 	Disconnect(ctx context.Context, in *DisconnectRequest, opts ...grpc.CallOption) (*DisconnectReply, error)
 }
 
@@ -66,7 +66,7 @@ func (x *exchangeServiceExchangeMsgClient) Recv() (*Msg, error) {
 	return m, nil
 }
 
-func (c *exchangeServiceClient) Connect(ctx context.Context, in *ConnectReply, opts ...grpc.CallOption) (*ConnectReply, error) {
+func (c *exchangeServiceClient) Connect(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (*ConnectReply, error) {
 	out := new(ConnectReply)
 	err := c.cc.Invoke(ctx, "/wsapi.ExchangeService/Connect", in, out, opts...)
 	if err != nil {
@@ -89,7 +89,7 @@ func (c *exchangeServiceClient) Disconnect(ctx context.Context, in *DisconnectRe
 // for forward compatibility
 type ExchangeServiceServer interface {
 	ExchangeMsg(ExchangeService_ExchangeMsgServer) error
-	Connect(context.Context, *ConnectReply) (*ConnectReply, error)
+	Connect(context.Context, *ConnectRequest) (*ConnectReply, error)
 	Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error)
 	mustEmbedUnimplementedExchangeServiceServer()
 }
@@ -101,7 +101,7 @@ type UnimplementedExchangeServiceServer struct {
 func (UnimplementedExchangeServiceServer) ExchangeMsg(ExchangeService_ExchangeMsgServer) error {
 	return status.Errorf(codes.Unimplemented, "method ExchangeMsg not implemented")
 }
-func (UnimplementedExchangeServiceServer) Connect(context.Context, *ConnectReply) (*ConnectReply, error) {
+func (UnimplementedExchangeServiceServer) Connect(context.Context, *ConnectRequest) (*ConnectReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Connect not implemented")
 }
 func (UnimplementedExchangeServiceServer) Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error) {
@@ -147,7 +147,7 @@ func (x *exchangeServiceExchangeMsgServer) Recv() (*Msg, error) {
 }
 
 func _ExchangeService_Connect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ConnectReply)
+	in := new(ConnectRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func _ExchangeService_Connect_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/wsapi.ExchangeService/Connect",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ExchangeServiceServer).Connect(ctx, req.(*ConnectReply))
+		return srv.(ExchangeServiceServer).Connect(ctx, req.(*ConnectRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

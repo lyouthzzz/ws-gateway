@@ -8,7 +8,7 @@ import "wsgateway/protocol.proto";
 
 service ExchangeService {
   rpc ExchangeMsg(stream Msg) returns (stream Msg);
-  rpc Connect(ConnectReply) returns (ConnectReply);
+  rpc Connect(ConnectRequest) returns (ConnectReply);
   rpc Disconnect(DisconnectRequest) returns (DisconnectReply);
 }
 

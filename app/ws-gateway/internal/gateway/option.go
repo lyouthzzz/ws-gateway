@@ -21,5 +21,5 @@ func WebsocketGatewayOptionSidGenerator(g socketid.Generator) WebsocketGatewayOp
 }
 
 func WebsocketGatewayOptionLocalIP(ip string) WebsocketGatewayOption {
-	return func(gateway *WebsocketGateway) { gateway.localIP = ip }
+	return func(gateway *WebsocketGateway) { gateway.ip = ip }
 }

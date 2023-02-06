@@ -39,7 +39,7 @@ func NewRegistry(r *etcd.Registry) registry.Registrar {
 
 // 手动注册 http websocket 路由
 func _WebsocketGateway_Connect_Handler(gateway *gateway.WebsocketGateway, srv *http.Server) {
-	srv.Handle("/gateway", gateway.WebsocketConnectHandler())
+	srv.Handle("/gateway/connect", gateway.WebsocketConnectHandler())
 }
 
 // 注册 prometheus metrics 路由
