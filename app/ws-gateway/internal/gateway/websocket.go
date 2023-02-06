@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"context"
 	"github.com/go-kratos/kratos/v2/encoding"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gorilla/websocket"
@@ -107,6 +108,10 @@ func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
 			if err := codec.Unmarshal(data, &protoMsg); err != nil {
 				log.Errorf("unmarshal protocol err: %s", err.Error())
 				continue
+			}
+
+			if protoMsg.Type == wsgateway.Type_name[wsgateway.Type_HEARTBEAT] {
+				_, _ = gateway.wsAPIClient.KeepAlive(context.Background(), &wsapi.KeepAliveRequest{Server: gateway.ip, Sid: sid, Uid: connectReply.Uid})
 			}
 
 			if err = gateway.upstream.Send(&wsapi.Msg{

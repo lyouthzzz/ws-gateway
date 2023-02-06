@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/metadata"
 	"io"
+	"time"
 )
 
 const _defaultRecvChanCap = 10000
@@ -24,9 +25,10 @@ func NewExchangeService() *ExchangeService {
 
 type ExchangeService struct {
 	wsapi.UnimplementedExchangeServiceServer
-	streams     map[string]wsapi.ExchangeService_ExchangeMsgServer
-	exchangeBiz *biz.ExchangeBiz
-	recvMsgChan chan *wsapi.Msg
+	streams       map[string]wsapi.ExchangeService_ExchangeMsgServer
+	exchangeBiz   *biz.ExchangeBiz
+	userStatusBiz *biz.UserStatusBiz
+	recvMsgChan   chan *wsapi.Msg
 }
 
 func (svc *ExchangeService) ExchangeMsg(msgServer wsapi.ExchangeService_ExchangeMsgServer) error {
@@ -63,6 +65,35 @@ func (svc *ExchangeService) ExchangeMsg(msgServer wsapi.ExchangeService_Exchange
 	}
 
 	return nil
+}
+
+func (svc *ExchangeService) Connect(ctx context.Context, req *wsapi.ConnectRequest) (*wsapi.ConnectReply, error) {
+	err := svc.userStatusBiz.Connect(ctx, &domain.UserStatus{
+		Server:         req.Server,
+		Sid:            req.Sid,
+		Uid:            -1,
+		ExpireDuration: 60 * time.Minute,
+	})
+	return &wsapi.ConnectReply{Uid: -1}, err
+}
+
+func (svc *ExchangeService) Disconnect(ctx context.Context, req *wsapi.DisconnectRequest) (*wsapi.DisconnectReply, error) {
+	err := svc.userStatusBiz.Disconnect(ctx, &domain.UserStatus{
+		Server: req.Server,
+		Sid:    req.Sid,
+		Uid:    -1,
+	})
+	return &wsapi.DisconnectReply{}, err
+}
+
+func (svc *ExchangeService) KeepAlive(ctx context.Context, req *wsapi.KeepAliveRequest) (*wsapi.KeepAliveReply, error) {
+	err := svc.userStatusBiz.KeepAlive(ctx, &domain.UserStatus{
+		Server:         req.Server,
+		Sid:            req.Sid,
+		Uid:            req.Uid,
+		ExpireDuration: 0,
+	})
+	return &wsapi.KeepAliveReply{}, err
 }
 
 func (svc *ExchangeService) sendMsg() {

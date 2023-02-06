@@ -16,3 +16,7 @@ func (biz *UserStatusBiz) Connect(ctx context.Context, status *domain.UserStatus
 func (biz *UserStatusBiz) Disconnect(ctx context.Context, status *domain.UserStatus) error {
 	return biz.userStatusRepo.Disconnect(ctx, status)
 }
+
+func (biz *UserStatusBiz) KeepAlive(ctx context.Context, status *domain.UserStatus) error {
+	return biz.userStatusRepo.KeepAlive(ctx, status)
+}

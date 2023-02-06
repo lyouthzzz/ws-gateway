@@ -25,6 +25,7 @@ type ExchangeServiceClient interface {
 	ExchangeMsg(ctx context.Context, opts ...grpc.CallOption) (ExchangeService_ExchangeMsgClient, error)
 	Connect(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (*ConnectReply, error)
 	Disconnect(ctx context.Context, in *DisconnectRequest, opts ...grpc.CallOption) (*DisconnectReply, error)
+	KeepAlive(ctx context.Context, in *KeepAliveRequest, opts ...grpc.CallOption) (*KeepAliveReply, error)
 }
 
 type exchangeServiceClient struct {
@@ -84,6 +85,15 @@ func (c *exchangeServiceClient) Disconnect(ctx context.Context, in *DisconnectRe
 	return out, nil
 }
 
+func (c *exchangeServiceClient) KeepAlive(ctx context.Context, in *KeepAliveRequest, opts ...grpc.CallOption) (*KeepAliveReply, error) {
+	out := new(KeepAliveReply)
+	err := c.cc.Invoke(ctx, "/wsapi.ExchangeService/KeepAlive", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExchangeServiceServer is the server API for ExchangeService service.
 // All implementations must embed UnimplementedExchangeServiceServer
 // for forward compatibility
@@ -91,6 +101,7 @@ type ExchangeServiceServer interface {
 	ExchangeMsg(ExchangeService_ExchangeMsgServer) error
 	Connect(context.Context, *ConnectRequest) (*ConnectReply, error)
 	Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error)
+	KeepAlive(context.Context, *KeepAliveRequest) (*KeepAliveReply, error)
 	mustEmbedUnimplementedExchangeServiceServer()
 }
 
@@ -106,6 +117,9 @@ func (UnimplementedExchangeServiceServer) Connect(context.Context, *ConnectReque
 }
 func (UnimplementedExchangeServiceServer) Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
+}
+func (UnimplementedExchangeServiceServer) KeepAlive(context.Context, *KeepAliveRequest) (*KeepAliveReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method KeepAlive not implemented")
 }
 func (UnimplementedExchangeServiceServer) mustEmbedUnimplementedExchangeServiceServer() {}
 
@@ -182,6 +196,24 @@ func _ExchangeService_Disconnect_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExchangeService_KeepAlive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(KeepAliveRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExchangeServiceServer).KeepAlive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/wsapi.ExchangeService/KeepAlive",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExchangeServiceServer).KeepAlive(ctx, req.(*KeepAliveRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExchangeService_ServiceDesc is the grpc.ServiceDesc for ExchangeService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -196,6 +228,10 @@ var ExchangeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Disconnect",
 			Handler:    _ExchangeService_Disconnect_Handler,
+		},
+		{
+			MethodName: "KeepAlive",
+			Handler:    _ExchangeService_KeepAlive_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

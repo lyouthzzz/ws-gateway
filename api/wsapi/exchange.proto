@@ -10,6 +10,7 @@ service ExchangeService {
   rpc ExchangeMsg(stream Msg) returns (stream Msg);
   rpc Connect(ConnectRequest) returns (ConnectReply);
   rpc Disconnect(DisconnectRequest) returns (DisconnectReply);
+  rpc KeepAlive(KeepAliveRequest) returns (KeepAliveReply);
 }
 
 message Msg {
@@ -25,14 +26,22 @@ message ConnectRequest {
 }
 
 message ConnectReply {
-  int64 uid = 1;
-  string channel = 2;
+  uint64 uid = 1;
 }
 
 message DisconnectRequest {
   string server = 1;
   string sid = 2;
-  string channel = 3;
+  uint64 uid = 3;
 }
 
 message DisconnectReply {}
+
+message KeepAliveRequest {
+  string server = 1;
+  string sid = 2;
+  uint64 uid = 3;
+}
+
+message KeepAliveReply {}
+
