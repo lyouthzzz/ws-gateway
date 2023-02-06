@@ -12,11 +12,21 @@ import "google/protobuf/duration.proto";
 message Bootstrap {
   Server server = 1;
   Registry registry = 2;
+  Data data = 3;
 }
 
 message Server {
   server.Config http = 1;
   server.Config grpc = 2;
+}
+
+message Data {
+  message Redis {
+    string addr = 1;
+    int64 db = 2;
+    string password = 3;
+  }
+  Redis redis = 1;
 }
 
 message Registry {

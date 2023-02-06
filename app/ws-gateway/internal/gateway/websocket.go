@@ -11,6 +11,7 @@ import (
 	metrics "github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/metric"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/socketid"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
+	"github.com/lyouthzzz/ws-gateway/pkg/encoding/proto"
 	"github.com/lyouthzzz/ws-gateway/pkg/netutil"
 	"net/http"
 	"sync"
@@ -90,8 +91,8 @@ func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
 		defer clear()
 
 		log.Infof("conn connect. sid: %d", sid)
-		// json 序列化
-		codec := encoding.GetCodec("json")
+		// proto 序列化
+		codec := encoding.GetCodec(proto.Name)
 
 		for {
 			_, data, err := conn.ReadMessage()

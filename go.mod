@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/go-kratos/kratos/contrib/registry/etcd/v2 v2.0.0-20230201021226-239121155d0f
 	github.com/go-kratos/kratos/v2 v2.5.4
+	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/google/wire v0.5.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/imdario/mergo v0.3.13
