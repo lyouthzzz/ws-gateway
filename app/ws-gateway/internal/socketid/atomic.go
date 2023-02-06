@@ -1,6 +1,9 @@
 package socketid
 
-import "sync/atomic"
+import (
+	"strconv"
+	"sync/atomic"
+)
 
 var _ Generator = (*atomicGenerator)(nil)
 
@@ -12,6 +15,7 @@ type atomicGenerator struct {
 	v uint64
 }
 
-func (g *atomicGenerator) NextSid() (uint64, error) {
-	return atomic.AddUint64(&g.v, 1), nil
+func (g *atomicGenerator) NextSid() (string, error) {
+	v := atomic.AddUint64(&g.v, 1)
+	return strconv.FormatUint(v, 10), nil
 }

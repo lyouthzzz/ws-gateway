@@ -11,17 +11,21 @@ type MsgHandler interface {
 	HandleProtocol(*wsgateway.Protocol) error
 }
 
-func GetMsgHandler(t string) MsgHandler {
-	handler, ok := msgHandlerRegistry[t]
+func GetMsgHandler(name string) MsgHandler {
+	handler, ok := msgHandlerRegistry[name]
 	if ok {
 		return handler
 	}
-	return msgHandlerRegistry["default"]
+	return msgHandlerRegistry["DEFAULT"]
+}
+
+func RegisterHandler(name string, handler MsgHandler) {
+	msgHandlerRegistry[name] = handler
 }
 
 func init() {
 	msgHandlerRegistry = make(map[string]MsgHandler)
-	msgHandlerRegistry["default"] = &defaultMsgHandler{}
+	msgHandlerRegistry["DEFAULT"] = &defaultMsgHandler{}
 }
 
 var _ MsgHandler = (*defaultMsgHandler)(nil)

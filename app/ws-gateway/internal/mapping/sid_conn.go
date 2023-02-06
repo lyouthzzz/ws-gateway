@@ -6,28 +6,28 @@ import (
 )
 
 func NewSidConnMapping() *SidConnMapping {
-	return &SidConnMapping{relations: make(map[uint64]*websocket.Conn)}
+	return &SidConnMapping{relations: make(map[string]*websocket.Conn)}
 }
 
 type SidConnMapping struct {
-	relations map[uint64]*websocket.Conn
+	relations map[string]*websocket.Conn
 
 	mu sync.RWMutex
 }
 
-func (m *SidConnMapping) Add(sid uint64, conn *websocket.Conn) {
+func (m *SidConnMapping) Add(sid string, conn *websocket.Conn) {
 	m.mu.Lock()
 	m.relations[sid] = conn
 	m.mu.Unlock()
 }
 
-func (m *SidConnMapping) Delete(sid uint64) {
+func (m *SidConnMapping) Delete(sid string) {
 	m.mu.Lock()
 	delete(m.relations, sid)
 	m.mu.Unlock()
 }
 
-func (m *SidConnMapping) Get(sid uint64) (*websocket.Conn, bool) {
+func (m *SidConnMapping) Get(sid string) (*websocket.Conn, bool) {
 	m.mu.RLock()
 	conn, has := m.relations[sid]
 	m.mu.RUnlock()

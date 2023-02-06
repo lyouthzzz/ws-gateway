@@ -13,8 +13,8 @@ service ExchangeService {
 }
 
 message Msg {
-  uint64 sid = 1;
-  string gatewayIP = 2;
+  string server = 1;
+  string sid = 2;
   wsgateway.Protocol payload = 3;
 }
 

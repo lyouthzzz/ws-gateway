@@ -17,10 +17,10 @@ import (
 
 func NewWebsocketGateway(opts ...WebsocketGatewayOption) *WebsocketGateway {
 	gateway := &WebsocketGateway{
-		sidGenerator:    socketid.NewAtomicGenerator(0),
-		upgrader:        &websocket.Upgrader{},
-		sidConnRelation: mapping.NewSidConnMapping(),
-		localIP:         netutil.LocalIPString(),
+		sidGenerator:   socketid.NewAtomicGenerator(0),
+		upgrader:       &websocket.Upgrader{},
+		sidConnMapping: mapping.NewSidConnMapping(),
+		localIP:        netutil.LocalIPString(),
 	}
 
 	for _, opt := range opts {
@@ -33,11 +33,11 @@ func NewWebsocketGateway(opts ...WebsocketGatewayOption) *WebsocketGateway {
 }
 
 type WebsocketGateway struct {
-	upstream        upstream.Upstream
-	upgrader        *websocket.Upgrader
-	sidGenerator    socketid.Generator
-	sidConnRelation *mapping.SidConnMapping
-	localIP         string
+	upstream       upstream.Upstream
+	upgrader       *websocket.Upgrader
+	sidGenerator   socketid.Generator
+	sidConnMapping *mapping.SidConnMapping
+	localIP        string
 
 	mu sync.Mutex
 }
@@ -53,11 +53,11 @@ func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
 		metrics.GatewayOnlineTotals.Inc()
 
 		nextSid, _ := gateway.sidGenerator.NextSid()
-		gateway.sidConnRelation.Add(nextSid, conn)
+		gateway.sidConnMapping.Add(nextSid, conn)
 
 		clear := func() {
 			metrics.GatewayOnlineTotals.Dec()
-			gateway.sidConnRelation.Delete(nextSid)
+			gateway.sidConnMapping.Delete(nextSid)
 			_ = conn.Close()
 
 			log.Infof("conn closed. sid: %d\n", nextSid)
@@ -82,9 +82,9 @@ func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
 			}
 
 			if err = gateway.upstream.Send(&wsapi.Msg{
-				Sid:       nextSid,
-				GatewayIP: gateway.localIP,
-				Payload:   protoMsg,
+				Server:  gateway.localIP,
+				Sid:     nextSid,
+				Payload: protoMsg,
 			}); err != nil {
 				log.Infof("send upstream err: %s", err.Error())
 			}
@@ -99,12 +99,12 @@ func (gateway *WebsocketGateway) recvMsg() {
 			log.Infof("recv msg err: %s", err.Error())
 			continue
 		}
-		if msg.Sid == 0 {
-			log.Infof("recv msg sid is 0, continue")
+		if msg.Sid == "" {
+			log.Infof("recv msg sid is empty, continue")
 			continue
 		}
 
-		conn, has := gateway.sidConnRelation.Get(msg.Sid)
+		conn, has := gateway.sidConnMapping.Get(msg.Sid)
 		if !has {
 			log.Infof("conn offline. sid: %d", msg.Sid)
 			continue
