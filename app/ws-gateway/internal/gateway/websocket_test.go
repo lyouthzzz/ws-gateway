@@ -5,7 +5,7 @@ import (
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/lyouthzzz/ws-gateway/api/wsapi"
-	"github.com/lyouthzzz/ws-gateway/api/wsgateway/protocol"
+	"github.com/lyouthzzz/ws-gateway/api/wsgateway"
 	"github.com/lyouthzzz/ws-gateway/app/ws-gateway/internal/upstream"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
@@ -25,7 +25,7 @@ func TestWebsocketProtocol(t *testing.T) {
 
 	fmt.Printf("payload len: %d\n", len(payloadContent))
 
-	protoMsg := &protocol.Protocol{
+	protoMsg := &wsgateway.Protocol{
 		Type:    "message",
 		Payload: payloadContent,
 	}
@@ -71,9 +71,9 @@ func BenchmarkWebsocketGateway_Send_case1(b *testing.B) {
 	websocketGateway := getMockGateway(b)
 
 	msg := &wsapi.Msg{
-		Sid:       1,
-		GatewayIP: "localhost",
-		Payload: &protocol.Protocol{
+		Sid:    "1",
+		Server: "localhost",
+		Payload: &wsgateway.Protocol{
 			Type:    "HEARTBEAT",
 			Payload: []byte(randStr(1024)),
 		},

@@ -110,7 +110,7 @@ func (gateway *WebsocketGateway) WebsocketConnectHandler() http.HandlerFunc {
 				continue
 			}
 
-			if protoMsg.Type == wsgateway.Type_name[wsgateway.Type_HEARTBEAT] {
+			if protoMsg.Type == wsgateway.Type_name[int32(wsgateway.Type_HEARTBEAT)] {
 				_, _ = gateway.wsAPIClient.KeepAlive(context.Background(), &wsapi.KeepAliveRequest{Server: gateway.ip, Sid: sid, Uid: connectReply.Uid})
 			}
 

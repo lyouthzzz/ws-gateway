@@ -71,17 +71,17 @@ func (svc *ExchangeService) Connect(ctx context.Context, req *wsapi.ConnectReque
 	err := svc.userStatusBiz.Connect(ctx, &domain.UserStatus{
 		Server:         req.Server,
 		Sid:            req.Sid,
-		Uid:            -1,
+		Uid:            0,
 		ExpireDuration: 60 * time.Minute,
 	})
-	return &wsapi.ConnectReply{Uid: -1}, err
+	return &wsapi.ConnectReply{Uid: 0}, err
 }
 
 func (svc *ExchangeService) Disconnect(ctx context.Context, req *wsapi.DisconnectRequest) (*wsapi.DisconnectReply, error) {
 	err := svc.userStatusBiz.Disconnect(ctx, &domain.UserStatus{
 		Server: req.Server,
 		Sid:    req.Sid,
-		Uid:    -1,
+		Uid:    0,
 	})
 	return &wsapi.DisconnectReply{}, err
 }
